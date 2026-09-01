@@ -58,6 +58,36 @@ async def handler(websocket):
     try:
         async for message in websocket:
             print(f"\n[ws recv] Сообщение от клиента: {message}")
+
+            # Парсим сообщение от клиента
+            try:
+                outer = json.loads(message)
+                # Внешняя структура: { id, isResult, data (строка JSON) }
+                inner = (
+                    json.loads(outer.get("data", "{}"))
+                    if isinstance(outer.get("data"), str)
+                    else outer.get("data", {})
+                )
+
+                cmd_name = inner.get("name")
+                cmd_data = inner.get("data", {})
+
+                if cmd_name == "click":
+                    obj_id = cmd_data.get("id")
+                    print(f"  → Клиент кликнул по объекту с ID={obj_id}")
+
+                    # ТУТ БУДЕТ ВАША ЛОГИКА МАРС
+                    # Например:
+                    # if obj_id == 5:  # ID источника питания
+                    #     # увеличить напряжение
+                    #     # отправить update для источника и для стрелки вольтметра
+                    #     pass
+
+                else:
+                    print(f"  → Получена команда: {cmd_name}, данные: {cmd_data}")
+
+            except Exception as e:
+                print(f"  → Ошибка парсинга: {e}")
     except websockets.exceptions.ConnectionClosed:
         pass
     except Exception as e:
